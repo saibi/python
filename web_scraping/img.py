@@ -11,3 +11,7 @@ images = bsObj.findAll("img", {"src":re.compile("\.\.\/img\/gifts/img.*\.jpg")})
 for image in images:
 	print(image["src"])
 
+
+mytags = bsObj.findAll(lambda tag: len(tag.attrs) == 2)
+for t in mytags:
+    print(t)
