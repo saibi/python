@@ -1,0 +1,9 @@
+for mac 
+
+python3.x
+
+urllib 설치 
+$ pip3 install urllib3
+
+beautifulsoup 설치 
+$ pip3 install BeautifulSoup4
