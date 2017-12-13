@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+
+
+# extract ip from ifconfig output
+
 import sys
 import re
 
