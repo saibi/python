@@ -53,56 +53,67 @@ with requests.Session() as s:
 
     # check date
     now = datetime.now()
-    print(now)
+    print('*', now)
 
     if now.weekday() == 5 or now.weekday() == 6:
+        print('weekend')
         raise Exception('Weekend. Do not login !!!!!')
 
     # check time
-    if now.hour > 9 or now.hour < 18:
-        print("working hours")
-        #raise Exception('Working hours !!!!!')
-
-    if now.hour < 9:
-        print("go to work")
-    elif now.hour > 18:
-        print("leave work")
-    
-    # sleep 
-    #sleep_sec = random.randrange(0, 60 * 10)
-    #print("Sleep", sleep_sec, "second(s)...")
-    #time.sleep(sleep_sec)
+    if now.hour > 9 and now.hour < 18:
+        print('working hours')
+        raise Exception('Working hours !!!!!')
 
 
-    sys.exit(0)
+    # dbg halt
+    #print("dbg halt")
+    #sys.exit(0)
 
 
     # try login
-    print(header)
-    print(LOGIN_INFO)
+    #print(header)
+    #print(LOGIN_INFO)
+    print("Login ekiss...")
     login_req = s.post('http://ekiss.huvitz.com/login.aspx', headers=header,data=LOGIN_INFO)
-    print(login_req.status_code)
+    #print(login_req.status_code)
     # 200 means success
 
     if login_req.status_code != 200:
+        print("login error:", login_req.status_code)
         print(html)
         raise Exception('LOGIN ERROR. Check the code !!!!!')
+
+    print("OK")
     
     # main page
-    main_page = s.get('http://ekiss.huvitz.com/main.aspx')
-    soup = bs(main_page.text, 'html.parser') 
-    print(soup)
+    page = s.get('http://ekiss.huvitz.com/main.aspx')
+    #soup = bs(page.text, 'html.parser') 
+    #print(soup)
 
+    # sleep 
+    sleep_sec = random.randrange(0, 60 * 10)
+    print("Sleep", sleep_sec, "second(s)...")
+    time.sleep(sleep_sec)
+
+
+
+    header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
 
     if now.hour < 9:
-        print("go to work")
         # go to work page
-        #gotowork_page = s.get('http://ekiss.huvitz.com/board/work_In.aspx')
-    elif now.hour > 18:
-        print("leave work")
+        print("Open go to work page...")
+        page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', header=header)
+    elif now.hour >= 18:
         # leave work page
-        #leavework_page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx')
+        print("Open leave work page...")
+        page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=header)
 
+    if page.status_code != 200:
+        print("work page error:", page.status_code)
+        print(page.text)
+        raise Exception('work page ERROR. Check the code !!!!!')
+
+    print("Completed.")
 
     # log out
     #logout_req = s.get('http://ekiss.huvitz.com/logout.aspx', headers=header)
