@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup as bs
 import random
 import sys
 from datetime import datetime
+import time
 
 header = {
         'Referer' : 'http://ekiss.huvitz.com/',
@@ -29,7 +30,10 @@ LOGIN_INFO = {
 
 # Session 생성, with 구문 안에서 유지
 with requests.Session() as s:
-    first_page = s.get('http://ekiss.huvitz.com/')
+    # select agent
+    header['User-Agent'] = agent_list[random.randrange(0,5)]
+
+    first_page = s.get('http://ekiss.huvitz.com/', headers=header)
     html = first_page.text
     soup = bs(html, 'html.parser')
 
@@ -44,8 +48,6 @@ with requests.Session() as s:
     LOGIN_INFO['btnLogin.x'] = random.randrange(20, 130)
     LOGIN_INFO['btnLogin.y'] = random.randrange(10, 70)
 
-    # select agent
-    header['User-Agent'] = agent_list[random.randrange(0,5)]
 
 
 
@@ -58,8 +60,18 @@ with requests.Session() as s:
 
     # check time
     if now.hour > 9 or now.hour < 18:
-        raise Exception('Working hours !!!!!')
+        print("working hours")
+        #raise Exception('Working hours !!!!!')
 
+    if now.hour < 9:
+        print("go to work")
+    elif now.hour > 18:
+        print("leave work")
+    
+    # sleep 
+    #sleep_sec = random.randrange(0, 60 * 10)
+    #print("Sleep", sleep_sec, "second(s)...")
+    #time.sleep(sleep_sec)
 
 
     sys.exit(0)
@@ -81,11 +93,15 @@ with requests.Session() as s:
     soup = bs(main_page.text, 'html.parser') 
     print(soup)
 
-    # go to work page
-    #gotowork_page = s.get('http://ekiss.huvitz.com/board/work_In.aspx')
 
-    # leave work page
-    #leavework_page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx')
+    if now.hour < 9:
+        print("go to work")
+        # go to work page
+        #gotowork_page = s.get('http://ekiss.huvitz.com/board/work_In.aspx')
+    elif now.hour > 18:
+        print("leave work")
+        # leave work page
+        #leavework_page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx')
 
 
     # log out
