@@ -31,7 +31,8 @@ LOGIN_INFO = {
 # Session 생성, with 구문 안에서 유지
 with requests.Session() as s:
     # select agent
-    header['User-Agent'] = agent_list[random.randrange(0,5)]
+    agent = agent_list[random.randrange(0,5)]
+    header['User-Agent'] = agent
 
     first_page = s.get('http://ekiss.huvitz.com/', headers=header)
     html = first_page.text
@@ -48,12 +49,13 @@ with requests.Session() as s:
     LOGIN_INFO['btnLogin.x'] = random.randrange(20, 130)
     LOGIN_INFO['btnLogin.y'] = random.randrange(10, 70)
 
-
-
+    # dump header & login info
+    #print(header)
+    #print(LOGIN_INFO)
 
     # check date
     now = datetime.now()
-    print('*', now)
+    print('*', now, agent)
 
     if now.weekday() == 5 or now.weekday() == 6:
         print('weekend')
@@ -65,57 +67,73 @@ with requests.Session() as s:
         raise Exception('Working hours !!!!!')
 
 
-    # dbg halt
-    #print("dbg halt")
-    #sys.exit(0)
 
 
     # try login
-    #print(header)
-    #print(LOGIN_INFO)
     print("Login ekiss...")
     login_req = s.post('http://ekiss.huvitz.com/login.aspx', headers=header,data=LOGIN_INFO)
-    #print(login_req.status_code)
-    # 200 means success
-
+    # login_req.status_code 200 means success
+    
     if login_req.status_code != 200:
         print("login error:", login_req.status_code)
         print(html)
         raise Exception('LOGIN ERROR. Check the code !!!!!')
 
-    print("OK")
     
     # main page
     page = s.get('http://ekiss.huvitz.com/main.aspx')
-    #soup = bs(page.text, 'html.parser') 
-    #print(soup)
+    soup = bs(page.text, 'html.parser') 
 
-    # sleep 
+    result = soup.find('a', { 'class' : 'btn_logout' } )
+    if result == None:
+        # need mobile msg auth
+        print("NEED MOBILE MSG AUTH")
+        print(page.text)
+        raise Exception('NEED MOBILE MSG AUTH')
+
+    print("OK")
+
+    # need random sleep 
     sleep_sec = random.randrange(0, 60 * 10)
     print("Sleep", sleep_sec, "second(s)...")
     time.sleep(sleep_sec)
 
-
-
+    page = None
     header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
-
-    if now.hour < 9:
-        # go to work page
-        print("Open go to work page...")
-        page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', header=header)
+    if now.hour < 9: 
+        print("Open checkin page...")
+        result = soup.find('a', { 'id' : 'btnWorkIn' } )
+        if result != None and str(result).find('btn_attendance_off') < 0:
+            # checkin
+            print('fake get checkin page')
+            page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=header)
+        else:
+            print("already checked in.")
     elif now.hour >= 18:
-        # leave work page
-        print("Open leave work page...")
-        page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=header)
+        print("Open checkout page...")
+        result = soup.find('a', { 'id' : 'btnWorkOut' } )
+        if result != None and str(result).find('btn_attendance_off') < 0:
+            # checkout
+            page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=header)
+        else:
+            print("Checkout btn is disabled. Try checkin in first.")
 
-    if page.status_code != 200:
+
+    if page != None and page.status_code == 200:
+        print("Completed.")
+    elif page == None:
+        print('Try later.')
+    else:
         print("work page error:", page.status_code)
         print(page.text)
         raise Exception('work page ERROR. Check the code !!!!!')
 
-    print("Completed.")
 
     # log out
     #logout_req = s.get('http://ekiss.huvitz.com/logout.aspx', headers=header)
     #soup = bs(logout_req.text, 'html.parser')
     #print(soup)
+
+    # dbg halt
+    #print("dbg halt")
+    #sys.exit(0)
