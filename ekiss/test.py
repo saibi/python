@@ -7,6 +7,64 @@ import sys
 from datetime import datetime
 import time
 
+
+def read_date_file():
+    try:
+        f = open("/tmp/date.txt", 'r')
+    except FileNotFoundError:
+        return []
+
+    lines = f.readlines()
+    f.close()
+
+    return lines
+
+
+def conv_line_to_date(line):
+        return datetime.strptime(line.rstrip('\n').split(" ")[0], "%Y/%m/%d").date()
+
+def read_date():
+    item_list = []
+    try:
+        f = open("/tmp/date.txt", 'r')
+    except FileNotFoundError:
+        return item_list
+
+    while True:
+        line = f.readline()
+        if not line:
+            break;
+
+        line = line.rstrip('\n')
+        print(line)
+        conv = line.split(" ")
+        print(conv)
+
+        line_date = datetime.strptime(conv[0], "%Y/%m/%d").date()
+        print(line_date)
+
+        item_list.append({ 'date' : line_date, 'line' : line })
+
+    f.close()
+
+    return item_list
+
+
+list = read_date()
+
+print(list)
+
+all = read_date_file()
+
+print(conv_line_to_date(all[1]))
+
+
+print("DBG halt")
+sys.exit(0)
+
+
+
+
 header = {
         'Referer' : 'http://ekiss.huvitz.com/',
         'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0)'
