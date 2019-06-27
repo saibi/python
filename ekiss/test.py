@@ -40,7 +40,7 @@ print('*', now, agent)
 
 if now.weekday() == 5 or now.weekday() == 6:
     print('Weekend. Do not login !!!!!')
-    #sys.exit(0) DBG
+    sys.exit(0) 
 
 CHECKIN_HOUR = 9
 CHECKOUT_HOUR = 18
@@ -48,7 +48,7 @@ CHECKOUT_HOUR = 18
 # check time
 if now.hour > CHECKIN_HOUR and now.hour < CHECKOUT_HOUR:
     print('Working hours !!!!!')
-    #sys.exit(0) DBG
+    sys.exit(0) 
 
 if now.hour < CHECKIN_HOUR:
     print("Checkin time")
@@ -158,22 +158,22 @@ with requests.Session() as s:
     # need random sleep 
     sleep_sec = random.randrange(0, 60 * 10)
     print("Sleep", sleep_sec, "second(s)...")
-    #time.sleep(sleep_sec)
+    time.sleep(sleep_sec)
 
-    #page = None
+    page = None
     header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
     if checkin_flag: 
         result = soup.find('a', { 'id' : 'btnWorkIn' } )
         if result != None and str(result).find('btn_attendance_off') < 0:
             print("Open checkin page...")
-            #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=header)
+            page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=header)
         else:
             print("already checked in.")
     elif checkout_flag:
         result = soup.find('a', { 'id' : 'btnWorkOut' } )
         if result != None and str(result).find('btn_attendance_off') < 0:
             print("Open checkout page...")
-            #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=header)
+            page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=header)
         else:
             print("Checkout btn is disabled. Try checkin first.")
 

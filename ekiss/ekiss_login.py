@@ -7,6 +7,7 @@ import sys
 from datetime import datetime
 import time
 
+
 header = {
         'Referer' : 'http://ekiss.huvitz.com/',
         'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0)'
@@ -28,11 +29,87 @@ LOGIN_INFO = {
     'ddlLang' : 'ko'
 }
 
-# Session 생성, with 구문 안에서 유지
+# select agent
+agent = agent_list[random.randrange(0,5)]
+header['User-Agent'] = agent
+
+
+# check date
+now = datetime.now()
+print('*', now, agent)
+
+if now.weekday() == 5 or now.weekday() == 6:
+    print('Weekend. Do not login !!!!!')
+    sys.exit(0) 
+
+CHECKIN_HOUR = 9
+CHECKOUT_HOUR = 18
+
+# check time
+if now.hour > CHECKIN_HOUR and now.hour < CHECKOUT_HOUR:
+    print('Working hours !!!!!')
+    sys.exit(0) 
+
+if now.hour < CHECKIN_HOUR:
+    print("Checkin time")
+    checkin_flag = True
+else:
+    checkin_flag = False
+
+if now.hour >= CHECKOUT_HOUR:
+    print("Checkout time")
+    checkout_flag = True
+else:
+    checkout_flag = False
+
+
+
+EXCEPTION_FILE="/tmp/checkin/exception_date.txt"
+
+def read_exception_file():
+    try:
+        f = open(EXCEPTION_FILE, 'r')
+    except FileNotFoundError:
+        return []
+
+    lines = f.readlines()
+    f.close()
+
+    return lines
+
+
+def convert_line_to_date(line):
+    try:
+        val = datetime.strptime(line.rstrip('\n').split(" ")[0], "%Y/%m/%d").date()
+    except ValueError:
+        return None
+
+    return val
+
+
+
+# exception rule
+
+exception_list = read_exception_file()
+if exception_list:
+    for line in exception_list:
+        date_val = convert_line_to_date(line)
+        if date_val != None:
+            if date_val == datetime.now().date():
+                if not 'checkin' in line:
+                    checkin_flag = False
+                if not 'checkout' in line:
+                    checkout_flag = False
+
+                print('Apply exception: "', line.rstrip('\n'), '"' )
+                print("Checkin =", checkin_flag, ", Checkout =", checkout_flag)
+
+if checkin_flag == False and checkout_flag == False:
+    print("Canceled.")
+    sys.exit(0)
+
+
 with requests.Session() as s:
-    # select agent
-    agent = agent_list[random.randrange(0,5)]
-    header['User-Agent'] = agent
 
     first_page = s.get('http://ekiss.huvitz.com/', headers=header)
     html = first_page.text
@@ -53,21 +130,6 @@ with requests.Session() as s:
     #print(header)
     #print(LOGIN_INFO)
 
-    # check date
-    now = datetime.now()
-    print('*', now, agent)
-
-    if now.weekday() == 5 or now.weekday() == 6:
-        print('weekend')
-        raise Exception('Weekend. Do not login !!!!!')
-
-    # check time
-    if now.hour > 9 and now.hour < 18:
-        print('working hours')
-        raise Exception('Working hours !!!!!')
-
-
-
 
     # try login
     print("Login ekiss...")
@@ -75,9 +137,9 @@ with requests.Session() as s:
     # login_req.status_code 200 means success
     
     if login_req.status_code != 200:
-        print("login error:", login_req.status_code)
+        print('LOGIN ERROR. Check the code !!!!!', login_req.status_code)
         print(html)
-        raise Exception('LOGIN ERROR. Check the code !!!!!')
+        sys.exit(0)
 
     
     # main page
@@ -89,7 +151,7 @@ with requests.Session() as s:
         # need mobile msg auth
         print("NEED MOBILE MSG AUTH")
         print(page.text)
-        raise Exception('NEED MOBILE MSG AUTH')
+        sys.exit(0)
 
     print("OK")
 
@@ -100,22 +162,20 @@ with requests.Session() as s:
 
     page = None
     header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
-    if now.hour < 9: 
-        print("Open checkin page...")
+    if checkin_flag: 
         result = soup.find('a', { 'id' : 'btnWorkIn' } )
         if result != None and str(result).find('btn_attendance_off') < 0:
-            # checkin
+            print("Open checkin page...")
             page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=header)
         else:
             print("already checked in.")
-    elif now.hour >= 18:
-        print("Open checkout page...")
+    elif checkout_flag:
         result = soup.find('a', { 'id' : 'btnWorkOut' } )
         if result != None and str(result).find('btn_attendance_off') < 0:
-            # checkout
+            print("Open checkout page...")
             page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=header)
         else:
-            print("Checkout btn is disabled. Try checkin in first.")
+            print("Checkout btn is disabled. Try checkin first.")
 
 
     if page != None and page.status_code == 200:
@@ -125,7 +185,7 @@ with requests.Session() as s:
     else:
         print("work page error:", page.status_code)
         print(page.text)
-        raise Exception('work page ERROR. Check the code !!!!!')
+        sys.exit(0)
 
 
     # log out
