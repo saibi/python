@@ -20,8 +20,13 @@ def read_date_file():
     return lines
 
 
-def conv_line_to_date(line):
-        return datetime.strptime(line.rstrip('\n').split(" ")[0], "%Y/%m/%d").date()
+def convert_line_to_date(line):
+    try:
+        val = datetime.strptime(line.rstrip('\n').split(" ")[0], "%Y/%m/%d").date()
+    except ValueError:
+        return None
+
+    return val
 
 def read_date():
     item_list = []
@@ -50,13 +55,24 @@ def read_date():
     return item_list
 
 
-list = read_date()
-
-print(list)
+#list = read_date()
+#print(list)
 
 all = read_date_file()
+if not all:
+    print("empty list")
+else:
+    for line in all:
+        date_val = convert_line_to_date(line)
+        if date_val != None:
+            print(date_val)
+            if 'checkin' in line:
+                print("checkin")
+            if 'checkout' in line:
+                print("checkout")
 
-print(conv_line_to_date(all[1]))
+            if date_val == datetime.now().date():
+                print("Today")
 
 
 print("DBG halt")
