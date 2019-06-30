@@ -156,7 +156,7 @@ with requests.Session() as s:
     print("OK")
 
     # need random sleep 
-    sleep_sec = random.randrange(0, 60 * 10)
+    sleep_sec = random.randrange(0, 60 * 15)
     print("Sleep", sleep_sec, "second(s)...")
     time.sleep(sleep_sec)
 
