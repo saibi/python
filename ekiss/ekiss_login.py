@@ -34,20 +34,16 @@ agent = agent_list[random.randrange(0,5)]
 header['User-Agent'] = agent
 
 
+# default checkin/checkout time
+CHECKIN_HOUR = 9
+CHECKOUT_HOUR = 18
+
 # check date
 now = datetime.now()
 print('*', now, agent)
 
 if now.weekday() == 5 or now.weekday() == 6:
     print('Weekend. Do not login !!!!!')
-    sys.exit(0) 
-
-CHECKIN_HOUR = 9
-CHECKOUT_HOUR = 18
-
-# check time
-if now.hour > CHECKIN_HOUR and now.hour < CHECKOUT_HOUR:
-    print('Working hours !!!!!')
     sys.exit(0) 
 
 if now.hour < CHECKIN_HOUR:
@@ -64,7 +60,17 @@ else:
 
 
 
+# exception rule
+
 EXCEPTION_FILE="/tmp/checkin/exception_date.txt"
+# format 
+# yyyy/mm/dd [checkin [11|13]] [checkout] 
+# 2019/07/04 checkin checkout   # checkin ON, checkout ON
+# 2019/07/04 checkin            # checkin ON, checkout OFF
+# 2019/07/05 checkout           # checkin OFF, checkout ON
+# 2019/07/05                    # checkin OFF, checkout OFF
+# 2019/07/06 checkin 11         # checkin at 11:00 (10:40~10:55)
+# 2019/07/06 checkin 13         # checkin at 13:00 (12:40~12:55)
 
 def read_exception_file():
     try:
@@ -86,29 +92,51 @@ def convert_line_to_date(line):
 
     return val
 
-
-
-# exception rule
-
 exception_list = read_exception_file()
 if exception_list:
     for line in exception_list:
+        if line[0] == '#':
+            continue
+
         date_val = convert_line_to_date(line)
         if date_val != None:
             if date_val == datetime.now().date():
-                if not 'checkin' in line:
+                # override checkin time
+                if 'checkin' in line:
+                    if '11' in line:
+                        CHECKIN_HOUR=11
+                    elif '13' in line:
+                        CHECKIN_HOUR=13
+                else:
                     checkin_flag = False
+
                 if not 'checkout' in line:
                     checkout_flag = False
 
                 print('Apply exception: "', line.rstrip('\n'), '"' )
+                if CHECKIN_HOUR != 9:
+                    print("  Checkin hour :", CHECKIN_HOUR)
+                    if now.hour < CHECKIN_HOUR-1:
+                        print("Checkin time not reached.")
+                    elif now.hour > CHECKIN_HOUR:
+                        print("Checkin time passed.")
+                    else:
+                        checkin_flag = True
                 print("Checkin =", checkin_flag, ", Checkout =", checkout_flag)
+                        
+# check time
+if now.hour > CHECKIN_HOUR and now.hour < CHECKOUT_HOUR:
+    print('Working hours !!!!!')
+    sys.exit(0) 
 
 if checkin_flag == False and checkout_flag == False:
     print("Canceled.")
     sys.exit(0)
 
 
+
+
+# start ekiss login
 with requests.Session() as s:
 
     first_page = s.get('http://ekiss.huvitz.com/', headers=header)
@@ -158,7 +186,7 @@ with requests.Session() as s:
     # need random sleep 
     sleep_sec = random.randrange(0, 60 * 15)
     print("Sleep", sleep_sec, "second(s)...")
-    time.sleep(sleep_sec)
+    time.sleep(sleep_sec) 
 
     page = None
     header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
