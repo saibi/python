@@ -165,7 +165,7 @@ def login_ekiss(open_type):
         #print(Header)
         #print(LOGIN_INFO)
 
-        time.sleep(2) # sleep 
+        time.sleep(1) 
 
         # try login
         print("Login ekiss...")
@@ -177,16 +177,15 @@ def login_ekiss(open_type):
             print(html)
             return ERR_LOGIN
 
-        
-        # main page
-        page = s.get('http://ekiss.huvitz.com/main.aspx')
-        soup = bs(page.text, 'html.parser') 
+        time.sleep(1) 
 
+        # main page
+        soup = bs(login_req.text, 'html.parser') 
         result = soup.find('a', { 'class' : 'btn_logout' } )
         if result == None:
             # need mobile msg auth
             print("NEED MOBILE MSG AUTH")
-            print(page.text)
+            print(login_req.text)
             return ERR_MOBILE_AUTH
 
         print("OK")
@@ -198,14 +197,16 @@ def login_ekiss(open_type):
             result = soup.find('a', { 'id' : 'btnWorkIn' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
                 print("Open checkin page...")
-                page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
+                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
+                #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
             else:
                 print("already checked in.")
         elif open_type == "checkout":
             result = soup.find('a', { 'id' : 'btnWorkOut' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
                 print("Open checkout page...")
-                page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
+                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
+                #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
             else:
                 print("Checkout btn is disabled. Try checkin first.")
         else:
@@ -227,7 +228,7 @@ def login_ekiss(open_type):
 # need random sleep 
 sleep_sec = random.randrange(0, 60 * 15)
 print("Sleep", sleep_sec, "second(s)...")
-time.sleep(sleep_sec) 
+#time.sleep(sleep_sec) 
 
 
 if checkin_flag:
