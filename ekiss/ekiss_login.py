@@ -165,7 +165,7 @@ def login_ekiss(open_type):
         #print(Header)
         #print(LOGIN_INFO)
 
-        time.sleep(2) # sleep 
+        time.sleep(1) 
 
         # try login
         print("Login ekiss...")
@@ -177,6 +177,7 @@ def login_ekiss(open_type):
             print(html)
             return ERR_LOGIN
 
+        time.sleep(1) 
         
         # main page
         page = s.get('http://ekiss.huvitz.com/main.aspx')
@@ -186,7 +187,7 @@ def login_ekiss(open_type):
         if result == None:
             # need mobile msg auth
             print("NEED MOBILE MSG AUTH")
-            print(page.text)
+            print(login_req.text)
             return ERR_MOBILE_AUTH
 
         print("OK")
