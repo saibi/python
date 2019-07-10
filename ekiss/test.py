@@ -36,7 +36,7 @@ Header['User-Agent'] = agent
 
 # default checkin/checkout time
 CHECKIN_HOUR = 9
-CHECKOUT_HOUR = 15
+CHECKOUT_HOUR = 18
 
 # check date
 now = datetime.now()
@@ -189,17 +189,12 @@ def login_ekiss(open_type):
             print(page.text)
             return ERR_MOBILE_AUTH
 
-        # DBG auth err
-        if random.randrange(0,2) == 0:
-            print("DBG mobile auth err")
-            return ERR_MOBILE_AUTH
-
         print("OK")
 
         # need random sleep 
         sleep_sec = random.randrange(0, 60 * 15)
         print("Sleep", sleep_sec, "second(s)...")
-        #time.sleep(sleep_sec)  # DBG
+        time.sleep(sleep_sec) 
 
         page = None
         Header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
@@ -208,16 +203,14 @@ def login_ekiss(open_type):
             result = soup.find('a', { 'id' : 'btnWorkIn' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
                 print("Open checkin page...")
-                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) # DBG
-                #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) # org
+                page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
             else:
                 print("already checked in.")
         elif open_type == "checkout":
             result = soup.find('a', { 'id' : 'btnWorkOut' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
                 print("Open checkout page...")
-                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) # DBG
-                #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) # org
+                page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
             else:
                 print("Checkout btn is disabled. Try checkin first.")
         else:
