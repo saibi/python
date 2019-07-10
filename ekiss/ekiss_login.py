@@ -191,11 +191,6 @@ def login_ekiss(open_type):
 
         print("OK")
 
-        # need random sleep 
-        sleep_sec = random.randrange(0, 60 * 15)
-        print("Sleep", sleep_sec, "second(s)...")
-        time.sleep(sleep_sec) 
-
         page = None
         Header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
 
@@ -229,8 +224,11 @@ def login_ekiss(open_type):
 
 
 
+# need random sleep 
+sleep_sec = random.randrange(0, 60 * 15)
+print("Sleep", sleep_sec, "second(s)...")
+time.sleep(sleep_sec) 
 
-# 
 
 if checkin_flag:
     open = "checkin"
