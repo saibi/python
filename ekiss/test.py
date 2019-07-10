@@ -8,12 +8,12 @@ from datetime import datetime
 import time
 
 
-header = {
+Header = {
         'Referer' : 'http://ekiss.huvitz.com/',
         'User-Agent' : 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0)'
 }
 
-agent_list = [
+Agent_list = [
     'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:63.0)',
     'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:67.0) Gecko/20100101 Firefox/67.0',
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
@@ -30,13 +30,13 @@ LOGIN_INFO = {
 }
 
 # select agent
-agent = agent_list[random.randrange(0,5)]
-header['User-Agent'] = agent
+agent = Agent_list[random.randrange(0,5)]
+Header['User-Agent'] = agent
 
 
 # default checkin/checkout time
 CHECKIN_HOUR = 9
-CHECKOUT_HOUR = 18
+CHECKOUT_HOUR = 15
 
 # check date
 now = datetime.now()
@@ -92,6 +92,8 @@ def convert_line_to_date(line):
 
     return val
 
+
+
 exception_list = read_exception_file()
 if exception_list:
     for line in exception_list:
@@ -134,95 +136,123 @@ if checkin_flag == False and checkout_flag == False:
     sys.exit(0)
 
 
+# error code
+ERR_LOGIN = 1
+ERR_MOBILE_AUTH = 2
+ERR_PAGE = 3
 
+def login_ekiss(open_type):
 
-# start ekiss login
-with requests.Session() as s:
+    # start ekiss login
+    with requests.Session() as s:
 
-    first_page = s.get('http://ekiss.huvitz.com/', headers=header)
-    html = first_page.text
-    soup = bs(html, 'html.parser')
+        first_page = s.get('http://ekiss.huvitz.com/', headers=Header)
+        html = first_page.text
+        soup = bs(html, 'html.parser')
 
-    # extract hidden input fields 
-    v = soup.find('input', {'name': '__VIEWSTATE'}) 
-    LOGIN_INFO['__VIEWSTATE'] = v['value']
-    v = soup.find('input', {'name': '__VIEWSTATEGENERATOR'}) 
-    LOGIN_INFO['__VIEWSTATEGENERATOR'] = v['value']
-    v = soup.find('input', {'name': '__EVENTVALIDATION'}) 
-    LOGIN_INFO['__EVENTVALIDATION'] = v['value']
+        # extract hidden input fields 
+        v = soup.find('input', {'name': '__VIEWSTATE'}) 
+        LOGIN_INFO['__VIEWSTATE'] = v['value']
+        v = soup.find('input', {'name': '__VIEWSTATEGENERATOR'}) 
+        LOGIN_INFO['__VIEWSTATEGENERATOR'] = v['value']
+        v = soup.find('input', {'name': '__EVENTVALIDATION'}) 
+        LOGIN_INFO['__EVENTVALIDATION'] = v['value']
 
-    LOGIN_INFO['btnLogin.x'] = random.randrange(20, 130)
-    LOGIN_INFO['btnLogin.y'] = random.randrange(10, 70)
+        LOGIN_INFO['btnLogin.x'] = random.randrange(20, 130)
+        LOGIN_INFO['btnLogin.y'] = random.randrange(10, 70)
 
-    # dump header & login info
-    #print(header)
-    #print(LOGIN_INFO)
+        # dump Header & login info
+        #print(Header)
+        #print(LOGIN_INFO)
 
+        time.sleep(2) # sleep 
 
-    # try login
-    print("Login ekiss...")
-    login_req = s.post('http://ekiss.huvitz.com/login.aspx', headers=header,data=LOGIN_INFO)
-    # login_req.status_code 200 means success
-    
-    if login_req.status_code != 200:
-        print('LOGIN ERROR. Check the code !!!!!', login_req.status_code)
-        print(html)
-        sys.exit(0)
+        # try login
+        print("Login ekiss...")
+        login_req = s.post('http://ekiss.huvitz.com/login.aspx', headers=Header,data=LOGIN_INFO)
+        # login_req.status_code 200 means success
+        
+        if login_req.status_code != 200:
+            print('LOGIN ERROR. Check the code !!!!!', login_req.status_code)
+            print(html)
+            return ERR_LOGIN
 
-    
-    # main page
-    page = s.get('http://ekiss.huvitz.com/main.aspx')
-    soup = bs(page.text, 'html.parser') 
+        
+        # main page
+        page = s.get('http://ekiss.huvitz.com/main.aspx')
+        soup = bs(page.text, 'html.parser') 
 
-    result = soup.find('a', { 'class' : 'btn_logout' } )
-    if result == None:
-        # need mobile msg auth
-        print("NEED MOBILE MSG AUTH")
-        print(page.text)
-        sys.exit(0)
+        result = soup.find('a', { 'class' : 'btn_logout' } )
+        if result == None:
+            # need mobile msg auth
+            print("NEED MOBILE MSG AUTH")
+            print(page.text)
+            return ERR_MOBILE_AUTH
 
-    print("OK")
+        # DBG auth err
+        if random.randrange(0,2) == 0:
+            print("DBG mobile auth err")
+            return ERR_MOBILE_AUTH
 
-    # need random sleep 
-    sleep_sec = random.randrange(0, 60 * 15)
-    print("Sleep", sleep_sec, "second(s)...")
-    #time.sleep(sleep_sec) # DBG skip sleep
+        print("OK")
 
-    page = None
-    header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
-    if checkin_flag: 
-        result = soup.find('a', { 'id' : 'btnWorkIn' } )
-        if result != None and str(result).find('btn_attendance_off') < 0:
-            print("Open checkin page...")
-            page = s.get('http://ekiss.huvitz.com/main.aspx', headers=header) # DBG 
-            #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=header)
+        # need random sleep 
+        sleep_sec = random.randrange(0, 60 * 15)
+        print("Sleep", sleep_sec, "second(s)...")
+        #time.sleep(sleep_sec)  # DBG
+
+        page = None
+        Header['Referer'] = 'http://ekiss.huvitz.com/main.aspx'
+
+        if open_type == "checkin":
+            result = soup.find('a', { 'id' : 'btnWorkIn' } )
+            if result != None and str(result).find('btn_attendance_off') < 0:
+                print("Open checkin page...")
+                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) # DBG
+                #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) # org
+            else:
+                print("already checked in.")
+        elif open_type == "checkout":
+            result = soup.find('a', { 'id' : 'btnWorkOut' } )
+            if result != None and str(result).find('btn_attendance_off') < 0:
+                print("Open checkout page...")
+                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) # DBG
+                #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) # org
+            else:
+                print("Checkout btn is disabled. Try checkin first.")
         else:
-            print("already checked in.")
-    elif checkout_flag:
-        result = soup.find('a', { 'id' : 'btnWorkOut' } )
-        if result != None and str(result).find('btn_attendance_off') < 0:
-            print("Open checkout page...")
-            page = s.get('http://ekiss.huvitz.com/main.aspx', headers=header) # DBG
-            #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=header)
+            print("invalid type")
+
+        if page != None and page.status_code == 200:
+            print("Completed.")
+        elif page == None:
+            print('Try later.')
         else:
-            print("Checkout btn is disabled. Try checkin first.")
+            print("work page error:", page.status_code)
+            print(page.text)
+            return ERR_PAGE
+
+        return 0
 
 
-    if page != None and page.status_code == 200:
-        print("Completed.")
-    elif page == None:
-        print('Try later.')
-    else:
-        print("work page error:", page.status_code)
-        print(page.text)
-        sys.exit(0)
 
 
-    # log out
-    #logout_req = s.get('http://ekiss.huvitz.com/logout.aspx', headers=header)
-    #soup = bs(logout_req.text, 'html.parser')
-    #print(soup)
+# 
 
-    # dbg halt
-    #print("dbg halt")
-    #sys.exit(0)
+if checkin_flag:
+    open = "checkin"
+elif checkout_flag:
+    open = "checkout"
+
+retry_count = 0
+while retry_count <= 3:
+    if retry_count > 0:
+        print("Retry #", retry_count, ".....")
+        time.sleep(3)
+
+    ret = login_ekiss(open)
+    if ret == ERR_MOBILE_AUTH:
+        retry_count = retry_count + 1
+    else: 
+        break;
+
