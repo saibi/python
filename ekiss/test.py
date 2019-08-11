@@ -140,6 +140,7 @@ if checkin_flag == False and checkout_flag == False:
 ERR_LOGIN = 1
 ERR_MOBILE_AUTH = 2
 ERR_PAGE = 3
+ERR_LATER = 4
 
 def login_ekiss(open_type):
 
@@ -197,16 +198,16 @@ def login_ekiss(open_type):
             result = soup.find('a', { 'id' : 'btnWorkIn' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
                 print("Open checkin page...")
-                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
                 #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
+                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
             else:
                 print("already checked in.")
         elif open_type == "checkout":
             result = soup.find('a', { 'id' : 'btnWorkOut' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
                 print("Open checkout page...")
-                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
                 #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
+                page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
             else:
                 print("Checkout btn is disabled. Try checkin first.")
         else:
@@ -216,6 +217,7 @@ def login_ekiss(open_type):
             print("Completed.")
         elif page == None:
             print('Try later.')
+            return ERR_LATER
         else:
             print("work page error:", page.status_code)
             print(page.text)
@@ -243,7 +245,7 @@ while retry_count <= 3:
         time.sleep(3)
 
     ret = login_ekiss(open)
-    if ret == ERR_MOBILE_AUTH:
+    if ret == ERR_MOBILE_AUTH or ret == ERR_LATER:
         retry_count = retry_count + 1
     else: 
         break;

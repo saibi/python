@@ -140,6 +140,7 @@ if checkin_flag == False and checkout_flag == False:
 ERR_LOGIN = 1
 ERR_MOBILE_AUTH = 2
 ERR_PAGE = 3
+ERR_LATER = 4
 
 def login_ekiss(open_type):
 
@@ -178,11 +179,9 @@ def login_ekiss(open_type):
             return ERR_LOGIN
 
         time.sleep(1) 
-        
-        # main page
-        page = s.get('http://ekiss.huvitz.com/main.aspx')
-        soup = bs(page.text, 'html.parser') 
 
+        # main page
+        soup = bs(login_req.text, 'html.parser') 
         result = soup.find('a', { 'class' : 'btn_logout' } )
         if result == None:
             # need mobile msg auth
@@ -216,6 +215,7 @@ def login_ekiss(open_type):
             print("Completed.")
         elif page == None:
             print('Try later.')
+            return ERR_LATER
         else:
             print("work page error:", page.status_code)
             print(page.text)
@@ -243,7 +243,7 @@ while retry_count <= 3:
         time.sleep(3)
 
     ret = login_ekiss(open)
-    if ret == ERR_MOBILE_AUTH:
+    if ret == ERR_MOBILE_AUTH or ret == ERR_LATER:
         retry_count = retry_count + 1
     else: 
         break;
