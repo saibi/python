@@ -71,6 +71,7 @@ EXCEPTION_FILE="/tmp/checkin/exception_date.txt"
 # 2019/07/05                    # checkin OFF, checkout OFF
 # 2019/07/06 checkin 11         # checkin at 11:00 (10:40~10:55)
 # 2019/07/06 checkin 13         # checkin at 13:00 (12:40~12:55)
+# 2019/10/22 checkout 12        # checkout at 12:00 (12:00~12:15)
 
 def read_exception_file():
     try:
@@ -114,6 +115,9 @@ if exception_list:
 
                 if not 'checkout' in line:
                     checkout_flag = False
+                else:
+                    if '12' in line:
+                        CHECKOUT_HOUR=12
 
                 print('Apply exception: "', line.rstrip('\n'), '"' )
                 if CHECKIN_HOUR != 9:
@@ -124,6 +128,11 @@ if exception_list:
                         print("Checkin time passed.")
                     else:
                         checkin_flag = True
+
+                if CHECKOUT_HOUR != 18:
+                    print("  Checkout hour :", CHECKOUT_HOUR)
+                    checkout_flag = True
+
                 print("Checkin =", checkin_flag, ", Checkout =", checkout_flag)
                         
 # check time
@@ -197,7 +206,7 @@ def login_ekiss(open_type):
         if open_type == "checkin":
             result = soup.find('a', { 'id' : 'btnWorkIn' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
-                print("Open checkin page...")
+                print("Open fake checkin page...")
                 #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
                 page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
             else:
@@ -205,7 +214,7 @@ def login_ekiss(open_type):
         elif open_type == "checkout":
             result = soup.find('a', { 'id' : 'btnWorkOut' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
-                print("Open checkout page...")
+                print("Open fake checkout page...")
                 #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
                 page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
             else:
@@ -229,7 +238,7 @@ def login_ekiss(open_type):
 
 # need random sleep 
 sleep_sec = random.randrange(0, 60 * 15)
-print("Sleep", sleep_sec, "second(s)...")
+print("Skip Sleep", sleep_sec, "second(s)...")
 #time.sleep(sleep_sec) 
 
 
