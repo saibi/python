@@ -35,6 +35,8 @@ Header['User-Agent'] = agent
 
 
 # default checkin/checkout time
+NORMAL_CHECKIN_HOUR = 9
+NORMAL_CHECKOUT_HOUR = 18
 CHECKIN_HOUR = 9
 CHECKOUT_HOUR = 18
 
@@ -64,13 +66,14 @@ else:
 
 EXCEPTION_FILE="/tmp/checkin/exception_date.txt"
 # format 
-# yyyy/mm/dd [checkin [11|13]] [checkout] 
+# yyyy/mm/dd [checkin [11|13]] [checkout [12]] 
 # 2019/07/04 checkin checkout   # checkin ON, checkout ON
 # 2019/07/04 checkin            # checkin ON, checkout OFF
 # 2019/07/05 checkout           # checkin OFF, checkout ON
 # 2019/07/05                    # checkin OFF, checkout OFF
-# 2019/07/06 checkin 11         # checkin at 11:00 (10:40~10:55)
-# 2019/07/06 checkin 13         # checkin at 13:00 (12:40~12:55)
+# 2019/07/06 checkin 11         # checkin at 11:00 (10:40~10:55) : morning off (1/4)
+# 2019/07/06 checkin 13         # checkin at 13:00 (12:40~12:55) : morning off (1/2)
+# 2019/07/06 checkout 12        # checkout at 12:00 (12:00~12:55) : afternoon off (1/2)
 
 def read_exception_file():
     try:
@@ -114,9 +117,12 @@ if exception_list:
 
                 if not 'checkout' in line:
                     checkout_flag = False
+                else:
+                    if '12' in line:
+                        CHECKOUT_HOUR=12
 
                 print('Apply exception: "', line.rstrip('\n'), '"' )
-                if CHECKIN_HOUR != 9:
+                if CHECKIN_HOUR != NORMAL_CHECKIN_HOUR:
                     print("  Checkin hour :", CHECKIN_HOUR)
                     if now.hour < CHECKIN_HOUR-1:
                         print("Checkin time not reached.")
@@ -124,6 +130,13 @@ if exception_list:
                         print("Checkin time passed.")
                     else:
                         checkin_flag = True
+
+                if CHECKOUT_HOUR != NORMAL_CHECKOUT_HOUR:
+                    print("  Checkout hour :", CHECKOUT_HOUR)
+                    if now.hour > CHECKOUT_HOUR + 1:
+                        print("Checkout time passed.")
+                    else: 
+                        checkout_flag = True
                 print("Checkin =", checkin_flag, ", Checkout =", checkout_flag)
                         
 # check time
