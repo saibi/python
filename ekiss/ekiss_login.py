@@ -167,6 +167,8 @@ ERR_LOGIN = 1
 ERR_MOBILE_AUTH = 2
 ERR_PAGE = 3
 ERR_LATER = 4
+ERR_ALREADY = 5
+ERR_CHECKIN_FIRST = 6
 
 def login_ekiss(open_type):
 
@@ -227,6 +229,7 @@ def login_ekiss(open_type):
                 page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
             else:
                 print("already checked in.")
+                return ERR_ALREADY
         elif open_type == "checkout":
             result = soup.find('a', { 'id' : 'btnWorkOut' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
@@ -234,6 +237,7 @@ def login_ekiss(open_type):
                 page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
             else:
                 print("Checkout btn is disabled. Try checkin first.")
+                return ERR_CHECKIN_FIRST
         else:
             print("invalid type")
 
@@ -266,10 +270,14 @@ retry_count = 0
 while retry_count <= 3:
     if retry_count > 0:
         print("Retry #", retry_count, ".....")
-        time.sleep(3)
+        time.sleep(1)
 
     ret = login_ekiss(open)
-    if ret == ERR_MOBILE_AUTH or ret == ERR_LATER:
+    if ret == ERR_MOBILE_AUTH:
+        retry_count = retry_count + 1
+        print("mobile auth. wait 30 seconds")
+        time.sleep(30)
+    elif ret == ERR_LATER:
         retry_count = retry_count + 1
     else: 
         break;
