@@ -42,6 +42,7 @@ CHECKOUT_HOUR = 18
 
 # check date
 now = datetime.now()
+
 print('*', now, agent)
 
 if now.weekday() == 5 or now.weekday() == 6:
@@ -97,44 +98,56 @@ def convert_line_to_date(line):
 
 
 
+
+
+
 exception_list = read_exception_file()
 if exception_list:
     for line in exception_list:
         if line[0] == '#':
             continue
+        if line.strip() == "":
+            continue
 
         date_val = convert_line_to_date(line)
         if date_val != None:
-            if date_val == datetime.now().date():
+            option_val = line.split(" ",maxsplit=1)[1]
+            if date_val == now.date(): 
                 # override checkin time
-                if 'checkin' in line:
-                    if '11' in line:
+                if 'checkin' in option_val:
+                    if '11' in option_val:
                         CHECKIN_HOUR=11
-                    elif '13' in line:
+                    elif '13' in option_val:
                         CHECKIN_HOUR=13
                 else:
                     checkin_flag = False
 
-                if not 'checkout' in line:
+                if not 'checkout' in option_val:
                     checkout_flag = False
                 else:
-                    if '12' in line:
+                    if '12' in option_val:
                         CHECKOUT_HOUR=12
 
                 print('Apply exception: "', line.rstrip('\n'), '"' )
                 if CHECKIN_HOUR != NORMAL_CHECKIN_HOUR:
                     print("  Checkin hour :", CHECKIN_HOUR)
                     if now.hour < CHECKIN_HOUR-1:
-                        print("Checkin time not reached.")
+                        print("Checkin hour not reached.")
+                        checkin_flag = False
                     elif now.hour > CHECKIN_HOUR:
-                        print("Checkin time passed.")
+                        print("Checkin hour passed.")
+                        checkin_flag = False
+                    elif now.minute < 10:
+                        print("Checkin minute not reached. (< 30min) ")
+                        checkin_flag = False
                     else:
                         checkin_flag = True
 
                 if CHECKOUT_HOUR != NORMAL_CHECKOUT_HOUR:
                     print("  Checkout hour :", CHECKOUT_HOUR)
                     if now.hour > CHECKOUT_HOUR + 1:
-                        print("Checkout time passed.")
+                        print("Checkout hour passed.")
+                        checkout_flag = False
                     else: 
                         checkout_flag = True
                 print("Checkin =", checkin_flag, ", Checkout =", checkout_flag)
@@ -179,7 +192,7 @@ def login_ekiss(open_type):
         #print(Header)
         #print(LOGIN_INFO)
 
-        time.sleep(1) 
+        time.sleep(2) 
 
         # try login
         print("Login ekiss...")
