@@ -36,13 +36,15 @@ Header['User-Agent'] = agent
 
 # default checkin/checkout time
 NORMAL_CHECKIN_HOUR = 9
-NORMAL_CHECKOUT_HOUR = 12
+NORMAL_CHECKOUT_HOUR = 18
 CHECKIN_HOUR = 9
 CHECKOUT_HOUR = 18
-LAST_HOUR = 20
 
 # check date
-now = datetime.now()
+#now = datetime.now()
+print("DBG set fake date")
+now = datetime(2019, 12, 10, 12,41,0)
+
 print('*', now, agent)
 
 if now.weekday() == 5 or now.weekday() == 6:
@@ -55,7 +57,7 @@ if now.hour < CHECKIN_HOUR:
 else:
     checkin_flag = False
 
-if now.hour >= CHECKOUT_HOUR and now.hour < LAST_HOUR:
+if now.hour >= CHECKOUT_HOUR:
     print("Checkout time")
     checkout_flag = True
 else:
@@ -67,15 +69,14 @@ else:
 
 EXCEPTION_FILE="/tmp/checkin/exception_date.txt"
 # format 
-# yyyy/mm/dd [checkin [11|13]] [checkout [12|last]] 
+# yyyy/mm/dd [checkin [11|13]] [checkout [12]] 
 # 2019/07/04 checkin checkout   # checkin ON, checkout ON
 # 2019/07/04 checkin            # checkin ON, checkout OFF
 # 2019/07/05 checkout           # checkin OFF, checkout ON
 # 2019/07/05                    # checkin OFF, checkout OFF
 # 2019/07/06 checkin 11         # checkin at 11:00 (10:40~10:55) : morning off (1/4)
 # 2019/07/06 checkin 13         # checkin at 13:00 (12:40~12:55) : morning off (1/2)
-# 2019/10/22 checkout 12        # checkout at 12:00 (12:00~12:15) : afternoon off (1/2)
-# 2019/10/22 checkout last      # checkout at 22:00 (22:00~23:59) 
+# 2019/07/06 checkout 12        # checkout at 12:00 (12:00~12:55) : afternoon off (1/2)
 
 def read_exception_file():
     try:
@@ -99,51 +100,58 @@ def convert_line_to_date(line):
 
 
 
+
+
+
 exception_list = read_exception_file()
 if exception_list:
     for line in exception_list:
         if line[0] == '#':
             continue
+        if line.strip() == "":
+            continue
 
         date_val = convert_line_to_date(line)
         if date_val != None:
-            if date_val == datetime.now().date():
+            option_val = line.split(" ",maxsplit=1)[1]
+            if date_val == now.date(): 
                 # override checkin time
-                if 'checkin' in line:
-                    if '11' in line:
+                if 'checkin' in option_val:
+                    if '11' in option_val:
                         CHECKIN_HOUR=11
-                    elif '13' in line:
+                    elif '13' in option_val:
                         CHECKIN_HOUR=13
                 else:
                     checkin_flag = False
 
-                if not 'checkout' in line:
+                if not 'checkout' in option_val:
                     checkout_flag = False
                 else:
-                    if '12' in line:
+                    if '12' in option_val:
                         CHECKOUT_HOUR=12
-                    elif 'last' in line:
-                        if now.hour >= LAST_HOUR:
-                            checkout_flag = True
-                            print("Last checkout !!!")
 
                 print('Apply exception: "', line.rstrip('\n'), '"' )
                 if CHECKIN_HOUR != NORMAL_CHECKIN_HOUR:
                     print("  Checkin hour :", CHECKIN_HOUR)
                     if now.hour < CHECKIN_HOUR-1:
-                        print("Checkin time not reached.")
+                        print("Checkin hour not reached.")
+                        checkin_flag = False
                     elif now.hour > CHECKIN_HOUR:
-                        print("Checkin time passed.")
+                        print("Checkin hour passed.")
+                        checkin_flag = False
+                    elif now.minute < 10:
+                        print("Checkin minute not reached. (< 30min) ")
+                        checkin_flag = False
                     else:
                         checkin_flag = True
 
                 if CHECKOUT_HOUR != NORMAL_CHECKOUT_HOUR:
                     print("  Checkout hour :", CHECKOUT_HOUR)
                     if now.hour > CHECKOUT_HOUR + 1:
-                        print("Checkout time passed.")
+                        print("Checkout hour passed.")
+                        checkout_flag = False
                     else: 
                         checkout_flag = True
-
                 print("Checkin =", checkin_flag, ", Checkout =", checkout_flag)
                         
 # check time
@@ -186,7 +194,7 @@ def login_ekiss(open_type):
         #print(Header)
         #print(LOGIN_INFO)
 
-        time.sleep(1) 
+        time.sleep(2) 
 
         # try login
         print("Login ekiss...")
@@ -217,17 +225,19 @@ def login_ekiss(open_type):
         if open_type == "checkin":
             result = soup.find('a', { 'id' : 'btnWorkIn' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
-                print("Open fake checkin page...")
+                print("Open checkin page...")
                 #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
                 page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
+                print("DBG ignore work_In");
             else:
                 print("already checked in.")
         elif open_type == "checkout":
             result = soup.find('a', { 'id' : 'btnWorkOut' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
-                print("Open fake checkout page...")
+                print("Open checkout page...")
                 #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
                 page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
+                print("DBG ignore work_Out");
             else:
                 print("Checkout btn is disabled. Try checkin first.")
         else:
@@ -249,8 +259,9 @@ def login_ekiss(open_type):
 
 # need random sleep 
 sleep_sec = random.randrange(0, 60 * 15)
-print("Skip Sleep", sleep_sec, "second(s)...")
+print("Sleep", sleep_sec, "second(s)...")
 #time.sleep(sleep_sec) 
+print("DBG skip sleep")
 
 
 if checkin_flag:
