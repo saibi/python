@@ -42,8 +42,8 @@ CHECKOUT_HOUR = 18
 
 # check date
 #now = datetime.now()
-print("DBG set fake date")
-now = datetime(2019, 12, 10, 12,41,0)
+now = datetime(2019,12,30,18,2,3)
+
 
 print('*', now, agent)
 
@@ -113,7 +113,9 @@ if exception_list:
 
         date_val = convert_line_to_date(line)
         if date_val != None:
-            option_val = line.split(" ",maxsplit=1)[1]
+            if 'check' in line:
+                option_val = line.split(" ",maxsplit=1)[1]
+
             if date_val == now.date(): 
                 # override checkin time
                 if 'checkin' in option_val:
@@ -169,6 +171,8 @@ ERR_LOGIN = 1
 ERR_MOBILE_AUTH = 2
 ERR_PAGE = 3
 ERR_LATER = 4
+ERR_ALREADY = 5
+ERR_CHECKIN_FIRST = 6
 
 def login_ekiss(open_type):
 
@@ -225,21 +229,23 @@ def login_ekiss(open_type):
         if open_type == "checkin":
             result = soup.find('a', { 'id' : 'btnWorkIn' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
-                print("Open checkin page...")
+                #print("Open checkin page...")
                 #page = s.get('http://ekiss.huvitz.com/board/work_In.aspx', headers=Header) 
+                print("Open fake checkin page...")
                 page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
-                print("DBG ignore work_In");
             else:
                 print("already checked in.")
+                return ERR_ALREADY
         elif open_type == "checkout":
             result = soup.find('a', { 'id' : 'btnWorkOut' } )
             if result != None and str(result).find('btn_attendance_off') < 0:
-                print("Open checkout page...")
+                #print("Open checkout page...")
                 #page = s.get('http://ekiss.huvitz.com/board/work_Out.aspx', headers=Header) 
+                print("Open fake checkout page...")
                 page = s.get('http://ekiss.huvitz.com/main.aspx', headers=Header) 
-                print("DBG ignore work_Out");
             else:
                 print("Checkout btn is disabled. Try checkin first.")
+                return ERR_CHECKIN_FIRST
         else:
             print("invalid type")
 
@@ -259,9 +265,9 @@ def login_ekiss(open_type):
 
 # need random sleep 
 sleep_sec = random.randrange(0, 60 * 15)
-print("Sleep", sleep_sec, "second(s)...")
+#print("Sleep", sleep_sec, "second(s)...")
 #time.sleep(sleep_sec) 
-print("DBG skip sleep")
+print("skip Sleep", sleep_sec, "second(s)...")
 
 
 if checkin_flag:
@@ -273,10 +279,14 @@ retry_count = 0
 while retry_count <= 3:
     if retry_count > 0:
         print("Retry #", retry_count, ".....")
-        time.sleep(3)
+        time.sleep(1)
 
     ret = login_ekiss(open)
-    if ret == ERR_MOBILE_AUTH or ret == ERR_LATER:
+    if ret == ERR_MOBILE_AUTH:
+        retry_count = retry_count + 1
+        print("mobile auth. wait 30 seconds")
+        time.sleep(30)
+    elif ret == ERR_LATER:
         retry_count = retry_count + 1
     else: 
         break;
