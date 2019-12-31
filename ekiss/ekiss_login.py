@@ -111,6 +111,7 @@ if exception_list:
 
         date_val = convert_line_to_date(line)
         if date_val != None:
+            option_val = ""
             if 'check' in line:
                 option_val = line.split(" ",maxsplit=1)[1]
 

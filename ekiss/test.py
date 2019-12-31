@@ -42,7 +42,7 @@ CHECKOUT_HOUR = 18
 
 # check date
 #now = datetime.now()
-now = datetime(2019,12,30,18,2,3)
+now = datetime(2019,12,31,18,30,3)
 
 
 print('*', now, agent)
@@ -113,10 +113,12 @@ if exception_list:
 
         date_val = convert_line_to_date(line)
         if date_val != None:
+            option_val = ""
             if 'check' in line:
                 option_val = line.split(" ",maxsplit=1)[1]
 
             if date_val == now.date(): 
+                print("DBG 1", line, option_val)
                 # override checkin time
                 if 'checkin' in option_val:
                     if '11' in option_val:
@@ -125,6 +127,7 @@ if exception_list:
                         CHECKIN_HOUR=13
                 else:
                     checkin_flag = False
+                    print("DBG 2")
 
                 if not 'checkout' in option_val:
                     checkout_flag = False
