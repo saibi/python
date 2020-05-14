@@ -270,7 +270,7 @@ elif checkout_flag:
     open = "checkout"
 
 retry_count = 0
-while retry_count <= 3:
+while retry_count <= 5:
     if retry_count > 0:
         print("Retry #", retry_count, ".....")
         time.sleep(1)
@@ -278,10 +278,17 @@ while retry_count <= 3:
     ret = login_ekiss(open)
     if ret == ERR_MOBILE_AUTH:
         retry_count = retry_count + 1
-        print("mobile auth. wait 30 seconds")
-        time.sleep(30)
+        print("mobile auth. wait 60 seconds")
+        time.sleep(60)
     elif ret == ERR_LATER:
         retry_count = retry_count + 1
+        time.sleep(30)
+    elif ret == ERR_LOGIN:
+        retry_count = retry_count + 1
+        time.sleep(20)
+    elif ret == ERR_PAGE:
+        retry_count = retry_count + 1
+        time.sleep(10)
     else: 
         break;
 

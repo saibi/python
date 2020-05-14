@@ -42,7 +42,7 @@ CHECKOUT_HOUR = 18
 
 # check date
 #now = datetime.now()
-now = datetime(2019,12,31,18,30,3)
+now = datetime(2020,5,14,18,0,3)
 
 
 print('*', now, agent)
@@ -287,10 +287,17 @@ while retry_count <= 3:
     ret = login_ekiss(open)
     if ret == ERR_MOBILE_AUTH:
         retry_count = retry_count + 1
-        print("mobile auth. wait 30 seconds")
-        time.sleep(30)
+        print("mobile auth. wait 60 seconds")
+        time.sleep(60)
     elif ret == ERR_LATER:
         retry_count = retry_count + 1
+        time.sleep(30)
+    elif ret == ERR_LOGIN:
+        retry_count = retry_count + 1
+        time.sleep(20)
+    elif ret == ERR_PAGE:
+        retry_count = retry_count + 1
+        time.sleep(10)
     else: 
         break;
 
