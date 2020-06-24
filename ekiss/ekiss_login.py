@@ -177,7 +177,7 @@ def login_ekiss(open_type):
 
     # start ekiss login
     with requests.Session() as s:
-
+        print("open ekiss.huvitz.com")
         first_page = s.get('http://ekiss.huvitz.com/', headers=Header)
         html = first_page.text
         soup = bs(html, 'html.parser')

@@ -43,6 +43,7 @@ CHECKOUT_HOUR = 18
 # check date
 #now = datetime.now()
 now = datetime(2020,5,14,18,0,3)
+print("set test datetime:", now)
 
 
 print('*', now, agent)
@@ -182,6 +183,7 @@ def login_ekiss(open_type):
     # start ekiss login
     with requests.Session() as s:
 
+        print("open ekiss.huvitz.com")
         first_page = s.get('http://ekiss.huvitz.com/', headers=Header)
         html = first_page.text
         soup = bs(html, 'html.parser')
@@ -201,7 +203,9 @@ def login_ekiss(open_type):
         #print(Header)
         #print(LOGIN_INFO)
 
-        time.sleep(2) 
+        WAIT_SEC = 2 
+        print("wait", WAIT_SEC, " seconds")
+        time.sleep(WAIT_SEC) 
 
         # try login
         print("Login ekiss...")
