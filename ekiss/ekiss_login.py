@@ -21,9 +21,12 @@ Agent_list = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36'
 ]
 
+print("fill txtId & txtPwd first.");
+sys.exit(0) 
+
 LOGIN_INFO = {
-    'txtId': '050031',
-    'txtPwd': 'ekissc8c8',
+    'txtId': 'FILL',
+    'txtPwd': 'FILL',
     'btnLogin.x' : '62',
     'btnLogin.y' : '21' ,
     'ddlLang' : 'ko'
