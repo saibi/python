@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<xml_api_reply version="1">
+	<weather module_id="0" tab_id="0" mobile_row="0" mobile_zipped="1" row="0" section="0">
+		<forecast_information>
+			<city data="Munich, Bavaria" />
+			<postal_code data="Munich" />
+			<latitude_e6 data="" />
+			<longitude_e6 data="" />
+			<forecast_date data="2012-02-22" />
+			<current_date_time data="1970-01-01 00:00:00 +0000" />
+			<unit_system data="US" />
+		</forecast_information>
+		<current_conditions>
+			<condition data="Clear" />
+			<temp_f data="39" />
+			<temp_c data="4" />
+			<humidity data="Humidity: 56%" />
+			<icon data="/sunny.jpg" />
+			<wind_condition data="Wind: E at 8 mph" />
+		</current_conditions>
+		<current_conditions>
+			<condition data="Clear???" />
+			<temp_f data="18" />
+			<temp_c data="8" />
+			<humidity data="Humidity: 38%" />
+			<icon data="/sunny.jpg" />
+			<wind_condition data="Wind: N at 13 mph" />
+		</current_conditions>
+		<forecast_conditions>
+			<day_of_week data="Wed" />
+			<low data="27" />
+			<high data="43" />
+			<icon data="/sunny.jpg" />
+			<condition data="Clear" />
+		</forecast_conditions>
+		<forecast_conditions>
+			<day_of_week data="Thu" />
+			<low data="36" />
+			<high data="43" />
+			<icon data="/chance_of_rain.jpg" />
+			<condition data="Chance of Rain" />
+		</forecast_conditions>
+		<forecast_conditions>
+			<day_of_week data="Fri" />
+			<low data="36" />
+			<high data="54" />
+			<icon data="/sunny.jpg" />
+			<condition data="Clear" />
+		</forecast_conditions>
+		<forecast_conditions>
+			<day_of_week data="Sat" />
+			<low data="34" />
+			<high data="48" />
+			<icon data="/cloudy.jpg" />
+			<condition data="cloudy" />
+		</forecast_conditions>
+	</weather>
+</xml_api_reply>
