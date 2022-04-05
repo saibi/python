@@ -8,8 +8,10 @@ import sys
 import argparse 
  
 data_payload = 2048 
+
+UPACKET_HEADER = "u42b 1 0 10\n"
  
-def echo_client(addr, port, broadcast, message): 
+def echo_client(addr, port, broadcast, message, max): 
     """ A simple echo client """ 
     # Create a UDP socket 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
@@ -23,14 +25,17 @@ def echo_client(addr, port, broadcast, message):
     try: 
  
         # Send data 
-        print ("Sending [%s]" % message) 
-        upacket = "42b 10\n" + message
-        sent = sock.sendto(upacket.encode('utf-8'), server_address) 
+        print ("Send {msg}. {n} times".format(msg=message, n=max)) 
+
+        count = 0
+
+        while count < max:
+            print("sending #", count + 1)
+            upacket = UPACKET_HEADER + message + " #" + str(count) 
+            sent = sock.sendto(upacket.encode('utf-8'), server_address) 
+            count += 1
  
-        # Receive response 
-        data, server = sock.recvfrom(data_payload) 
-        print ("received [%s]" % data) 
- 
+
     finally: 
         print ("Closing connection to the server") 
         sock.close() 
@@ -40,11 +45,13 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', action="store", dest="port", type=int, required=True) 
     parser.add_argument('-a', '--addr', action="store", dest="addr", type=str, default='localhost', required=False)
     parser.add_argument('-b', '--broadcast', action='store_true', dest='broadcast')
+    parser.add_argument('-n', action="store", dest="n", type=int, default=100, required=False)
     parser.add_argument('message', nargs=argparse.REMAINDER) 
     given_args = parser.parse_args()  
     port = given_args.port 
     addr = given_args.addr
     broadcast = given_args.broadcast
+    n = given_args.n
     message = ' '.join(given_args.message)
 
-    echo_client(addr, port, broadcast, message) 
+    echo_client(addr, port, broadcast, message, n) 
