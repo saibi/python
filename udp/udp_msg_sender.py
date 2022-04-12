@@ -9,7 +9,7 @@ import argparse
  
 data_payload = 2048 
 
-UPACKET_HEADER = "u42b 1 0 10\n"
+UPACKET_HEADER = "u42b 1 0 1\n"
  
 def echo_client(addr, port, broadcast, message, max): 
     """ A simple echo client """ 

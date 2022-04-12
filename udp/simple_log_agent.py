@@ -6,7 +6,7 @@ import argparse
 import socket 
 
 BUFSIZE = 512
-UPACKET_HEADER = "u42b 1 0 10\n"
+UPACKET_HEADER = "u42b 1 0 1\n"
 
 def log_agent(addr, port):
 
