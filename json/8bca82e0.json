@@ -1,0 +1,31 @@
+{
+    "id": "8bca82e0",
+    "model": "HPE-910XD",
+    "gui": "1.16.3_gen3_test",
+    "motor": "2.3.2_20230524_B1400",
+    "mid": "GEN3HPE910XD",
+    "tport": "",
+    "log_size": "709907",
+    "log_lines": "16677",
+    "log_start": "2023-07-24T15:58:26",
+    "log_end": "2023-08-21T10:14:54",
+    "log_files": "1",
+    "sdcard": "1.1M",
+    "cfg_backup": "0",
+    "jobs": "0",
+    "build": "2023-08-21T08:51:17 *** GUI Version: [1.16.3_gen3_test (Build: Jul 26 2023, 16:34:12)] ***",
+    "uptime": "14:56:05 up 6:05, 0 users, load average: 1.29, 1.40, 1.32",
+    "date": "2023-08-21T14:56:05+0900",
+    "netcfg":
+    {
+        "mode": "static",
+        "address": "172.10.150.144",
+        "netmask": "255.255.0.0",
+        "gateway": "172.10.255.254",
+        "nameserver": ["172.16.4.3","172.16.4.4"],
+        "NTPSERVERS": "time.windows.com",
+        "link": "1",
+        "nic_count": "1",
+        "mac": "00:e0:4c:36:00:5a"
+    }
+}
