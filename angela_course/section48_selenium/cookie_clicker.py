@@ -14,6 +14,9 @@ btn.click()
 
 
 def get_available_items():
+    """
+    Returns a list of available items that can be purchased in the Cookie Clicker game.
+    """
     items = driver.find_elements(
         By.CSS_SELECTOR, "#store div[id^=buy]:not(.grayed)")
     items.reverse()
